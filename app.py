@@ -47,6 +47,30 @@ def register():
         success = "Please register for access."
         return render_template("register.html", success = success)
 
+# spell checker here 
+@app.route('/spell_check', methods=['GET', 'POST'])
+def spell_check():
+    if(session.get('logged_in') == True): 
+        cpath = os.getcwd()
+
+        if request.method == 'POST':
+            outputtext = request.form ['inputtext']
+            textfile = open("./static/text.txt", "w")
+            textfile.writelines(outputtext)
+            textfile.close()
+
+            tmp = subprocess.check_output([cpath + '/static/a.out', cpath + '/static/text.txt', cpath + '/static/wordlist.txt']).decode('utf-8')
+            misspelled = tmp.replace("\n",", ")[:-2]
+
+            return render_template("spell_check.html", misspelled = misspelled, outputtext = outputtext)
+
+        if request.method == 'GET':
+            return render_template("spell_check.html")
+
+    else:
+        return redirect(url_for('login'))
+        
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -74,28 +98,6 @@ def login():
         result = "Please login to use this website"
         return render_template("login.html", result = result)
 
-# spell checker here 
-@app.route('/spell_check', methods=['GET', 'POST'])
-def spell_check():
-    if(session.get('logged_in') == True): 
-        cpath = os.getcwd()
-
-        if request.method == 'POST':
-            outputtext = request.form ['inputtext']
-            textfile = open("./static/text.txt", "w")
-            textfile.writelines(outputtext)
-            textfile.close()
-
-            tmp = subprocess.check_output([cpath + '/static/a.out', cpath + '/static/text.txt', cpath + '/static/wordlist.txt']).decode('utf-8')
-            misspelled = tmp.replace("\n",", ")[:-2]
-
-            return render_template("spell_check.html", misspelled = misspelled, outputtext = outputtext)
-
-        if request.method == 'GET':
-            return render_template("spell_check.html")
-
-    else:
-        return redirect(url_for('login'))
     
 
 @app.route('/logout')
